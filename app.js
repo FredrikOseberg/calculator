@@ -2,7 +2,161 @@ let operator, calculatorUserInput = [], expression = [];
 const display = document.querySelector('.display .number p');
 const numberButtons = document.querySelectorAll('.number');
 const operators = document.querySelectorAll('.operator')
+const plusMinus = document.querySelector('.plus-minus');
 const reset = document.querySelector(".reset");
+const percent = document.querySelector(".percent");
+
+// Object controlling UI Elements
+calculatorUI = {
+	render: function(content) {
+		display.textContent = content;
+	}
+}
+
+// Object controlling event handlers
+calculatorHandlers = {
+	numberHandler: function(e) {
+		// Get the number from data-target and push into userinput array
+		const number = this.dataset.target;
+		// If a . exists, return from the function without doing anything;
+		checkForDotAndPushToUserInputArray(number);
+	},
+	operatorHandler: function(e) {
+		// Get the operator from data-type
+		const operator = this.dataset.type;
+
+		// If the operator is the equals operator, initiate evaluation and make sure the last number
+		// in the user input array is pushed. Then render the result.
+		if (operator === '=') {
+			onEqualKey();
+		} else {
+			onOperatorKey(operator);
+		}
+	},
+	resetHandler: function() {
+		calculator.resetCalc();
+	},
+	keydownHandler: function(e) {
+		const key = document.querySelector(`div[data-keycode="${e.keyCode}"]`);
+		if (!key) return;
+		// Get the key and check if it has data.target attribute
+		// If it is a dot, just pass it to checkfordot function
+		// If not, convert to number and push to the checkfordot function
+		if (key.dataset.target) {
+			if (!e.shiftKey) {
+				if (key.dataset.target === ".") {
+					var number = key.dataset.target;
+				} else {
+					var number = Number(key.dataset.target);
+				}
+				checkForDotAndPushToUserInputArray(number);
+			}
+		}
+
+		if (key.dataset.keycode === "13") {
+			onEqualKey();
+		}
+
+		if (key.dataset.type === "+") {
+			onOperatorKey("+");
+		}
+
+		if (key.dataset.type === "-") {
+			onOperatorKey("-");
+		}
+
+		if (key.dataset.type === "*") {
+			onOperatorKey("*");
+		}
+
+		if (e.keyCode === 55 && e.shiftKey) {
+			onOperatorKey("/");
+		}
+
+		if (key.dataset.keycode === "67") {
+			calculator.resetCalc();
+		}
+ 	},
+ 	plusMinusHandler: function() {
+ 		calculator.flipValue();
+ 	},
+ 	percentHandler: function() {
+ 		calculator.toPercentage();
+ 	}
+}
+
+// Object handling calculator logic
+const calculator = {
+	add: function(one, two) {
+		return one + two;
+	},
+	multiply: function(one, two) {
+		return one * two;
+	},
+	subtract: function(one, two) {
+		return one - two;
+	},
+	divide: function(one, two) {
+		return one / two;
+	},
+	evaluate: function(arr) {
+		if (arr.length < 3 || arr[arr.length - 1] === "0") return;
+		const expressionArray = arr;
+		let total = 0;
+
+		// While there is more than one number in the array, keep evaluating the expression
+		while (arr.length > 1) {
+			const indexOfMultiply = arr.indexOf("*");
+			const indexOfDivide = arr.indexOf("/");
+			// Find the first operator and perform multiplication or division
+			decideIfMultiplyOrDivide(expressionArray);
+
+			// Only add and subtract if there are no multiplication or division operators in the array
+			if (indexOfMultiply === -1 && indexOfDivide === -1) {
+				decideIfAddOrSubtract(expressionArray);
+			}
+		}
+		// Loop is over, there is only one item left in the array. Return the total value.
+		total = arr[0];
+		return total;
+	},
+	resetCalc: function () {
+		expression = [];
+		calculatorUserInput = [];
+		calculatorUI.render(0);
+	},
+	toPercentage: function() {
+		if (calculatorUserInput.length > 0 && expression.length === 0) {
+			const number = Number(calculatorUserInput.join(""));
+			expression.push(number);
+			calculatorUserInput = [];
+		}
+		if (expression.length > 1 || expression.length === 0) return;
+		const number = expression[0];
+		expression[0] = (number / 100) * 1;
+		console.log(expression[0]);
+		calculatorUI.render(expression.join(""));
+	},
+	flipValue: function() {
+		if (calculatorUserInput.length > 0 && expression.length === 0) {
+			const number = Number(calculatorUserInput.join(""));
+			expression.push(number);
+			calculatorUserInput = [];
+		}
+		if (expression.length > 1 || expression.length === 0) return;
+		const number = expression[0];
+		if (number > 0) {
+			expression[0] = -Math.abs(number);
+		} else {
+			expression[0] = Math.abs(number);
+		}
+		calculatorUI.render(expression.join(""));
+	},
+	removeCurrentNumber() {
+		// Not finished 
+		calculatorUserInput.splice(calculatorUserInput.length - 1, 1);
+	}
+};
 
 // If expression exists, render expression. Otherwise, render whatever is in 
 // calculator user input array
@@ -14,9 +168,6 @@ function checkForExpression() {
 		calculatorUI.render(buildExpression.join(""));
 	}
 }
-
-// Reset expression, user input and render 0 to the display
-
 
 // If there is an expression to evaluate (meaning expression array is greater than 1),
 // Convert whatever is in the calculatorUserInput array to number and push it to the expression array
@@ -91,122 +242,6 @@ function checkForDotAndPushToUserInputArray(number) {
 	checkForExpression();
 }
 
-// Object controlling UI Elements
-calculatorUI = {
-	render: function(content) {
-		display.textContent = content;
-	}
-}
-
-// Object controlling event handlers
-calculatorHandlers = {
-	numberHandler: function(e) {
-		// Get the number from data-target and push into userinput array
-		const number = this.dataset.target;
-		// If a . exists, return from the function without doing anything;
-		checkForDotAndPushToUserInputArray(number);
-	},
-	operatorHandler: function(e) {
-		// Get the operator from data-type
-		const operator = this.dataset.type;
-
-		// If the operator is the equals operator, initiate evaluation and make sure the last number
-		// in the user input array is pushed. Then render the result.
-		if (operator === '=') {
-			onEqualKey();
-		} else {
-			onOperatorKey(operator);
-		}
-	},
-	resetHandler: function() {
-		calculator.resetCalc();
-	},
-	keydownHandler: function(e) {
-		const key = document.querySelector(`div[data-keycode="${e.keyCode}"]`);
-		if (!key) return;
-
-		// Get the key and check if it has data.target attribute
-		// If it is a dot, just pass it to checkfordot function
-		// If not, convert to number and push to the checkfordot function
-		if (key.dataset.target) {
-			if (!e.shiftKey) {
-				if (key.dataset.target === ".") {
-					var number = key.dataset.target;
-				} else {
-					var number = Number(key.dataset.target);
-				}
-				checkForDotAndPushToUserInputArray(number);
-			}
-		}
-
-		if (key.dataset.keycode === "13") {
-			onEqualKey();
-		}
-
-		if (key.dataset.type === "+") {
-			onOperatorKey("+");
-		}
-
-		if (key.dataset.type === "-") {
-			onOperatorKey("-");
-		}
-
-		if (key.dataset.type === "*") {
-			onOperatorKey("*");
-		}
-
-		if (e.keyCode === 55 && e.shiftKey) {
-			onOperatorKey("/");
-		}
-
-		if (key.dataset.keycode === "67") {
-			calculator.resetCalc();
-		}
- 	}
-}
-
-// Object handling calculator logic
-const calculator = {
-	add: function(one, two) {
-		return one + two;
-	},
-	multiply: function(one, two) {
-		return one * two;
-	},
-	subtract: function(one, two) {
-		return one - two;
-	},
-	divide: function(one, two) {
-		return one / two;
-	},
-	evaluate: function(arr) {
-		if (arr.length < 3 || arr[arr.length - 1] === "0") return;
-		const expressionArray = arr;
-		let total = 0;
-
-		// While there is more than one number in the array, keep evaluating the expression
-		while (arr.length > 1) {
-			const indexOfMultiply = arr.indexOf("*");
-			const indexOfDivide = arr.indexOf("/");
-			// Find the first operator and perform multiplication or division
-			decideIfMultiplyOrDivide(expressionArray);
-
-			// Only add and subtract if there are no multiplication or division operators in the array
-			if (indexOfMultiply === -1 && indexOfDivide === -1) {
-				decideIfAddOrSubtract(expressionArray);
-			}
-		}
-		// Loop is over, there is only one item left in the array. Return the total value.
-		total = arr[0];
-		return total;
-	},
-	resetCalc: function () {
-		expression = [];
-		calculatorUserInput = [];
-		calculatorUI.render(0);
-	}
-};
-
 // Create a function that takes a mathematic expression from an array and
 // gives that expression to the proper function (passed as callback) and 
 // replaces the expression with the result in the array
@@ -255,6 +290,8 @@ function decideIfAddOrSubtract(arr) {
 numberButtons.forEach(number => number.addEventListener('click', calculatorHandlers.numberHandler));
 operators.forEach(operator => operator.addEventListener	('click', calculatorHandlers.operatorHandler));
 reset.addEventListener('click', calculatorHandlers.resetHandler);
+plusMinus.addEventListener('click', calculatorHandlers.plusMinusHandler);
+percent.addEventListener('click', calculatorHandlers.percentHandler);
 window.addEventListener('keydown', calculatorHandlers.keydownHandler);
 
 

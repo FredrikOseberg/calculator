@@ -8,12 +8,38 @@ p {
 	font-family: sans-serif, 'Open Sans';
 }
 
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+	color: #fff;
+}
+
+.main-header {
+	
+}
+
+.secondary-header {
+	width: 80%;
+	margin: 40px auto;
+	line-height: 1.7;
+	max-width: 500px;
+}
+
 .viewport {
 	height: 100vh;
-	background: steelblue;
+	background: #003663;
 	display: flex;
+	flex-direction: column;
 	justify-content: center;
 	align-items: center;
+}
+
+.container {
+	width: 1000px;
+	text-align: center;
 }
 
 #calculator {
@@ -21,12 +47,11 @@ p {
 	border-radius: 3px;
 	background: #fff;
 	box-shadow: 0 3px 0 rgba(0, 0, 0, 0.2);
+	margin: 0 auto;
 }
 
 .display {
-	background: #000428;  /* fallback for old browsers */
-background: -webkit-linear-gradient(to left, #004e92, #000428);  /* Chrome 10-25, Safari 5.1-6 */
-background: linear-gradient(to left, #004e92, #000428); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+	background: #a05151;
 	padding: 20px;
 	display: flex;
 	justify-content: flex-end;
@@ -51,7 +76,7 @@ background: linear-gradient(to left, #004e92, #000428); /* W3C, IE 10+/ Edge, Fi
 	font-size: 1.2em;
 	flex: 1;
 	padding: 20px 25px;
-	border: 1px solid #797878;
+	border: 1px solid #d06565;
 	box-shadow: 0 1px 0 0 rgba(0,0,0, 0.2);
 }
 
@@ -64,7 +89,6 @@ background: linear-gradient(to left, #004e92, #000428); /* W3C, IE 10+/ Edge, Fi
 	background-color: #af5d5d;
 	color: #fff;
 	font-size: 1.5em;
-	
 }
 
 .zero {
@@ -73,6 +97,6 @@ background: linear-gradient(to left, #004e92, #000428); /* W3C, IE 10+/ Edge, Fi
 }
 
 .equals {
-	border-bottom-right-raidus: 3px;
+	border-bottom-right-radius: 3px;
 }
 
