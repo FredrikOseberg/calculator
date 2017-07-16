@@ -45,7 +45,7 @@ calculatorHandlers = {
 		if (key.dataset.target) {
 			if (!e.shiftKey) {
 				if (key.dataset.target === ".") {
-					var number = key.dataset.target;
+					var number = ".";
 				} else {
 					var number = Number(key.dataset.target);
 				}
