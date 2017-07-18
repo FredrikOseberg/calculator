@@ -177,12 +177,13 @@ const calculator = {
 		}
 		if (expression.length > 1 || expression.length === 0) return;
 		const number = expression[0];
-		if (number > 0) {
+		const numberGreaterThanExpressionResult = number > 0;
+		if (numberGreaterThanExpressionResult) {
 			expression[0] = -Math.abs(number);
 		} else {
 			expression[0] = Math.abs(number);
 		}
-		calculatorUI.render(expression.join(""));
+		calculatorUI.render(expression);
 	},
 	removeCurrentNumber() {
 		const expressionLengthIsZero = expression.length === 0; 
@@ -198,9 +199,14 @@ const calculator = {
 		} else {
 			addItemToExpressionFromInput();
 			let fullExpressionAfterDelete = [], temporaryNum = [];
-			const expressionPieces = expression.join("").split("");
-			const lastItemPosition = expressionPieces.length - 1;
-			expressionPieces.splice(lastItemPosition, 1);
+			let expressionPieces;
+			function removeLastItemFromTempArray() {
+					expressionPieces = expression.join("").split("");
+					const lastItemPosition = expressionPieces.length - 1;
+					expressionPieces.splice(lastItemPosition, 1);
+			}
+			removeLastItemFromTempArray();
+
 
 			function constructNumberStringAndPushToFullExpressionArr() {
 				const number = temporaryNum.join("");
@@ -225,7 +231,7 @@ const calculator = {
 			});
 
 			expression = fullExpressionAfterDelete;
-			calculatorUI.render(expression.join(""));
+			calculatorUI.render(expression);
 
 			
 			const expressionIsEmpty = expression.length === 0;
@@ -398,7 +404,8 @@ function checkIfDeleteButtonShouldDisplay() {
 	} else {
 		const userInput = checkIfCalculateInputIsEmpty();
 		const noExpression = expression.length === 0;
-		if (!userInput) {
+		const noUserInput = !userInput 
+		if (noUserInput) {
 			removeBlockFromDeleteButton();
 			removeOpacityFromDeleteButton();
 		} else {
@@ -437,7 +444,6 @@ function removeOpacityFromDeleteButton() {
 function buildExpressionFromArray(arr) {
 	let temp = [];
 	let result = [];
-	const regExp = /\+/ig
 	arr.forEach(function buildExpression(item) {
 		const itemIsNotOperator = item !== '+' 
 								  && item !== '-'
