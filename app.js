@@ -1,14 +1,19 @@
 let operator, calculatorUserInput = [], expression = [];
-const display = document.querySelector('.display .number p');
+const display = document.querySelector('.display .display-number p');
 const numberButtons = document.querySelectorAll('.number');
 const operators = document.querySelectorAll('.operator')
 const plusMinus = document.querySelector('.plus-minus');
 const reset = document.querySelector(".reset");
 const percent = document.querySelector(".percent");
+const deleteButton = document.querySelector('.delete');
+const deleteButtonArrow = deleteButton.querySelector('.arrow');
 
 // Object controlling UI Elements
 calculatorUI = {
 	render: function(content) {
+		if (Array.isArray(content)) {
+			content = content.join("");
+		}
 		display.textContent = content;
 	}
 }
@@ -42,39 +47,55 @@ calculatorHandlers = {
 		// Get the key and check if it has data.target attribute
 		// If it is a dot, just pass it to checkfordot function
 		// If not, convert to number and push to the checkfordot function
-		if (key.dataset.target) {
-			if (!e.shiftKey) {
-				if (key.dataset.target === ".") {
-					var number = ".";
+		const keyHasDatasetTarget = key.dataset.target;
+		const noShiftKey = !e.shiftKey;
+		const keyIsDot = key.dataset.target === ".";
+		if (keyHasDatasetTarget) {
+			if (noShiftKey) {
+				if (keyIsDot) {
+					var calcButtonVal = ".";
 				} else {
-					var number = Number(key.dataset.target);
+					var calcButtonVal = key.dataset.target;
 				}
-				checkForDotAndPushToUserInputArray(number);
+				checkForDotAndPushToUserInputArray(calcButtonVal);
 			}
 		}
 
-		if (key.dataset.keycode === "13") {
+		const isBackSpace = key.dataset.keycode === "8";
+		if (isBackSpace) {
+			calculator.removeCurrentNumber();
+		}
+
+		const isEqualKey = key.dataset.keycode === "13";
+		if (isEqualKey) {
 			onEqualKey();
 		}
 
-		if (key.dataset.type === "+") {
+		const isPlusKey = key.dataset.type === "+";
+		if (isPlusKey) {
 			onOperatorKey("+");
 		}
 
-		if (key.dataset.type === "-") {
+		const isMinusKey = key.dataset.type === "-";
+		if (isMinusKey) {
 			onOperatorKey("-");
 		}
 
-		if (key.dataset.type === "*") {
+		const isMultiplicationKey = key.dataset.type === "*";
+		if (isMultiplicationKey) {
 			onOperatorKey("*");
 		}
 
-		if (e.keyCode === 55 && e.shiftKey) {
+		const isShiftAndDivisionKey = e.keyCode === 55 && e.shiftKey;
+		if (isShiftAndDivisionKey) {
 			onOperatorKey("/");
 		}
 
-		if (key.dataset.keycode === "67") {
+		const isResetKey = key.dataset.keycode === "67";
+		if (isResetKey) {
 			calculator.resetCalc();
+			removeBlockFromDeleteButton();
+			removeOpacityFromDeleteButton();
 		}
  	},
  	plusMinusHandler: function() {
@@ -101,9 +122,16 @@ const calculator = {
 	},
 	evaluate: function(arr) {
 		if (arr.length < 3 || arr[arr.length - 1] === "0") return;
+		const lastItemOfExpression = arr[arr.length - 1];
+		const lastItemOfExpressionIsDot = lastItemOfExpression === "."
+		if (lastItemOfExpressionIsDot) {
+			arr.pop();
+		}
+		
+		arr = buildExpressionFromArray(arr);
+
 		const expressionArray = arr;
 		let total = 0;
-
 		// While there is more than one number in the array, keep evaluating the expression
 		while (arr.length > 1) {
 			const indexOfMultiply = arr.indexOf("*");
@@ -124,6 +152,8 @@ const calculator = {
 		expression = [];
 		calculatorUserInput = [];
 		calculatorUI.render(0);
+		removeBlockFromDeleteButton();
+		removeOpacityFromDeleteButton();
 	},
 	toPercentage: function() {
 		if (calculatorUserInput.length > 0 && expression.length === 0) {
@@ -134,7 +164,6 @@ const calculator = {
 		if (expression.length > 1 || expression.length === 0) return;
 		const number = expression[0];
 		expression[0] = (number / 100) * 1;
-		console.log(expression[0]);
 		calculatorUI.render(expression.join(""));
 	},
 	flipValue: function() {
@@ -153,8 +182,54 @@ const calculator = {
 		calculatorUI.render(expression.join(""));
 	},
 	removeCurrentNumber() {
-		// Not finished 
-		calculatorUserInput.splice(calculatorUserInput.length - 1, 1);
+		const expressionLengthIsZero = expression.length === 0; 
+		if (expressionLengthIsZero) {
+			let lastItemPosition = calculatorUserInput.length - 1;
+			calculatorUserInput.splice(lastItemPosition, 1);
+			calculatorUI.render(calculatorUserInput.join(""));
+
+			const userInputIsEmpty = calculatorUserInput.length === 0;
+			if (userInputIsEmpty) {
+				calculator.resetCalc();
+			}
+		} else {
+			addItemToExpressionFromInput();
+			let fullExpressionAfterDelete = [], temporaryNum = [];
+			const expressionPieces = expression.join("").split("");
+			const lastItemPosition = expressionPieces.length - 1;
+			expressionPieces.splice(lastItemPosition, 1);
+
+			function constructNumberStringAndPushToFullExpressionArr() {
+				const number = temporaryNum.join("");
+				if (number) {
+					fullExpressionAfterDelete.push(number);
+				}
+				temporaryNum = [];
+			}
+
+			expressionPieces.forEach(function reBuildExpression(item, index) {
+				const itemIsOperator = item === '/' || item === '*' || item === "+" || item === '-';
+				if (!itemIsOperator) {
+					temporaryNum.push(item);
+				} else {	
+					constructNumberStringAndPushToFullExpressionArr();
+					fullExpressionAfterDelete.push(item);
+				}
+				if (index === expressionPieces.length - 1) {
+					const temporaryNumHasContents = temporaryNum.length > 0;
+					if (temporaryNumHasContents) constructNumberStringAndPushToFullExpressionArr();
+				}
+			});
+
+			expression = fullExpressionAfterDelete;
+			calculatorUI.render(expression.join(""));
+
+			
+			const expressionIsEmpty = expression.length === 0;
+			if (expressionIsEmpty) {
+				calculator.resetCalc();
+			}
+		}
 	}
 };
 
@@ -162,10 +237,10 @@ const calculator = {
 // calculator user input array
 function checkForExpression() {
 	if (!expression.length) {
-		calculatorUI.render(calculatorUserInput.join(""));
+		calculatorUI.render(calculatorUserInput);
 	} else {
 		const buildExpression = expression.concat(calculatorUserInput);
-		calculatorUI.render(buildExpression.join(""));
+		calculatorUI.render(buildExpression);
 	}
 }
 
@@ -174,9 +249,7 @@ function checkForExpression() {
 // then evaluate the expression. If there is a result, render result. Otherwise, render expression.
 function onEqualKey() {
 	if (expression.length === 1 || expression.length === 0) return;
-	const number = Number(calculatorUserInput.join(""));
-	expression.push(number);
-	calculatorUserInput = [];
+	addItemToExpressionFromInput();
 	const result = calculator.evaluate(expression);
 	if (result) {
 		calculatorUI.render(result);
@@ -189,57 +262,56 @@ function onEqualKey() {
 
 // If the last item in expression array is not a number, push the number and operator and empty user input.
 // Otherwise, add to the number already in expression array, then push the operator and empty user input.
-function onOperatorKey(operator) {
-	const length = expression.length;
-	// Set number equal to what is currently in the calculatorUserInput
-	// If the last item of expression array is not number, push the number and operator and empty userinput
-	if (typeof expression[length - 1] !== 'number') {
-		if (calculatorUserInput.length) {
-			const number = Number(calculatorUserInput.join(""));
-			expression.push(number);
-			expression.push(operator);
-			calculatorUserInput = [];
-		}
-	// If the last item of the expression array is a number. Add whatever the user types to the number
-	// And add the number back to the expression array at the length - 1 position. Then push the operator.
-	} else {
-		let tempArr = [expression[length - 1]];
-		tempArr = Number(tempArr.concat(calculatorUserInput).join(""));
-		expression[length - 1] = tempArr;
+function onOperatorKey(operator) {	
+	addItemToExpressionFromInput();
+	const lastItem = expression.length - 1;
+	const lastExpressionItem = expression[lastItem]
+
+	const lastExpressionItemIsNotOperator = lastExpressionItem !== '+' 
+											&& lastExpressionItem !== "-" 
+											&& lastExpressionItem !== "*"
+											&& lastExpressionItem !== '/';
+	
+	if (lastExpressionItemIsNotOperator) {
 		expression.push(operator);
-		calculatorUserInput = [];
 	}
-	// If there is an expression, render it.
+
 	if (expression.length > 0) {
-		calculatorUI.render(expression.join(""));
+		calculatorUI.render(expression);
 	}
 }
 
-function checkForDotAndPushToUserInputArray(number) {
-	if (number === '.') {
-		if (calculatorUserInput.indexOf(number) !== -1) {
-			return;
-		}
+function addItemToExpressionFromInput() {
+	const inputIsEmpty = calculatorUserInput.length === 0;
+	if (inputIsEmpty) return; 
+	const userInput = calculatorUserInput.join("");
+	expression.push(userInput);
+	calculatorUserInput = [];
+}
 
-		// If expression.length is one, a result has been calculated
-		// Therefore, we are now editing that specific result
-		// If there is a dot in the expression array already, return from this function
-		if (expression.length === 1) {
-			const expressionArr = expression.join("").split("");
-			if (expressionArr.indexOf(".") !== -1) {
-				return;
-			} 
-		}
-		// If the dot is the first item in the array, return from the function
-		if (calculatorUserInput.length === 0) {
+function checkForDotAndPushToUserInputArray(calcInput) {
+	const inputIsDot = calcInput === ".";
+	if (inputIsDot) {
+		const numberHasDot = calculatorUserInput.indexOf(".") !== -1;
+		if (numberHasDot) return;
+		const lastItem = calculatorUserInput.length - 1;
+		const lastUserInputItem = calculatorUserInput[lastItem] 
+		const lastCalculatorItemIsDot = lastUserInputItem === "."
+		if(lastCalculatorItemIsDot) {
 			return;
 		}
 	}
 
+	const expressionExists = expression.length > 0;
+	const userInputIsEmpty = calculatorUserInput === 1;
+	if (inputIsDot && expressionExists && userInputIsEmpty) {
+		return;
+	}
 
-	calculatorUserInput.push(number);
+	calculatorUserInput.push(calcInput);
 	// Render user input if there is no expression yet, otherwise, render expression
 	checkForExpression();
+	checkIfDeleteButtonShouldDisplay();
 }
 
 // Create a function that takes a mathematic expression from an array and
@@ -248,22 +320,21 @@ function checkForDotAndPushToUserInputArray(number) {
 function createMathOperatorFunction(operator, func, arr) {
 	return function() {
 		if (arr.indexOf(operator) !== -1) {
-			while (arr.indexOf(operator) !== -1) {
 				const position = arr.indexOf(operator);
 				const firstNumber = arr[position - 1];
 				const secondNumber = arr[position + 1];
 				total = func(firstNumber, secondNumber);
 				arr.splice(position - 1, 3, total);
-			}
 		}
 	}
 }
 
 // Check if the expression in a given array should multiply or divide
 function decideIfMultiplyOrDivide(arr) {
+	const tempArr = arr;
 	const multiplyFunction = createMathOperatorFunction("*", calculator.multiply, arr);
 	const dividerFunction = createMathOperatorFunction("/", calculator.divide, arr);
-	arr.forEach(item => {
+	tempArr.forEach(item => {
 		if (item === "*") {
 			multiplyFunction();
 		} else if( item === '/') {
@@ -274,9 +345,10 @@ function decideIfMultiplyOrDivide(arr) {
 
 // Check if the expression in a given array should add or subtract
 function decideIfAddOrSubtract(arr) {
+	const tempArr = arr;
 	const adderFunction = createMathOperatorFunction("+", calculator.add, arr);
 	const subtractFunction = createMathOperatorFunction("-", calculator.subtract, arr);
-	arr.forEach(item => {
+	tempArr.forEach(item => {
 		if (item === '+') {
 			adderFunction();
 		} else if (item === "-") {
@@ -293,5 +365,82 @@ reset.addEventListener('click', calculatorHandlers.resetHandler);
 plusMinus.addEventListener('click', calculatorHandlers.plusMinusHandler);
 percent.addEventListener('click', calculatorHandlers.percentHandler);
 window.addEventListener('keydown', calculatorHandlers.keydownHandler);
+
+function checkIfDeleteButtonShouldDisplay() {
+	const expressionIsNotEmpty = expression.length > 0;
+	if (expressionIsNotEmpty) {
+		addDisplayBlockToDeleteButton();
+		setTimeout(function addClassToDeleteButton () {
+			addOpacityOneToDeleteButton();
+		}, 150)
+	} else {
+		const userInput = checkIfCalculateInputIsEmpty();
+		const noExpression = expression.length === 0;
+		if (!userInput) {
+			removeBlockFromDeleteButton();
+			removeOpacityFromDeleteButton();
+		} else {
+			addDisplayBlockToDeleteButton();
+			setTimeout(function addClassToDeleteButton () {
+				addOpacityOneToDeleteButton();
+			}, 150)
+		}
+	}
+}
+
+function checkIfCalculateInputIsEmpty() {
+	return calculatorUserInput.length > 0 ? true : false;
+}
+
+function addDisplayBlockToDeleteButton() {
+	deleteButton.classList.add('delete-button-block');
+	deleteButtonArrow.classList.add('delete-button-block');
+}
+
+function removeBlockFromDeleteButton() {
+	deleteButton.classList.remove('delete-button-block');
+	deleteButtonArrow.classList.remove('delete-button-block');
+}
+
+function addOpacityOneToDeleteButton() {
+	deleteButton.classList.add('delete-button-opacity');
+	deleteButtonArrow.classList.add('delete-button-opacity');
+}
+
+function removeOpacityFromDeleteButton() {
+	deleteButton.classList.remove('delete-button-opacity');
+	deleteButtonArrow.classList.remove('delete-button-opacity');
+}
+
+function buildExpressionFromArray(arr) {
+	let temp = [];
+	let result = [];
+	const regExp = /\+/ig
+	arr.forEach(function buildExpression(item) {
+		const itemIsNotOperator = item !== '+' 
+								  && item !== '-'
+								  && item !== '*'
+								  && item !== '/';
+
+		if (itemIsNotOperator) {
+			const number = Number(item);
+			temp.push(number);
+		} else {
+			temp.push(item);
+		}
+	});
+
+	temp.forEach(function checkValidExpression(item, index) {
+		const nextItem = temp[index + 1];
+		if (typeof item === 'number' && typeof nextItem === 'number') {
+			item = item + nextItem;
+			temp.splice(index + 1, 1);
+		}
+		result.push(item);
+	});
+
+	return result;
+}
+
 
 
