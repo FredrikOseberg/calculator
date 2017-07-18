@@ -177,8 +177,8 @@ const calculator = {
 		}
 		if (expression.length > 1 || expression.length === 0) return;
 		const number = expression[0];
-		const numberGreaterThanExpressionResult = number > 0;
-		if (numberGreaterThanExpressionResult) {
+		const expressionResultsGreaterThanZero = number > 0;
+		if (expressionResultsGreaterThanZero) {
 			expression[0] = -Math.abs(number);
 		} else {
 			expression[0] = Math.abs(number);
