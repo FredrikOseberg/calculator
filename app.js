@@ -262,7 +262,10 @@ function onEqualKey() {
 
 // If the last item in expression array is not a number, push the number and operator and empty user input.
 // Otherwise, add to the number already in expression array, then push the operator and empty user input.
-function onOperatorKey(operator) {	
+function onOperatorKey(operator) {
+	const isFirstItemInInput = calculatorUserInput.length === 0;
+	const noExpression = expression.length === 0;
+	if (isFirstItemInInput && noExpression) return;
 	addItemToExpressionFromInput();
 	const lastItem = expression.length - 1;
 	const lastExpressionItem = expression[lastItem]
