@@ -103,6 +103,9 @@ calculatorHandlers = {
  	},
  	percentHandler: function() {
  		calculator.toPercentage();
+ 	},
+ 	deleteHandler: function() {
+ 		calculator.removeCurrentNumber();
  	}
 }
 
@@ -248,15 +251,30 @@ function checkForExpression() {
 // Convert whatever is in the calculatorUserInput array to number and push it to the expression array
 // then evaluate the expression. If there is a result, render result. Otherwise, render expression.
 function onEqualKey() {
+	const userInputEmpty = calculatorUserInput.length === 0;
+	const expressionLengthIsTwo = expression.length === 2;
+
 	if (expression.length === 1 || expression.length === 0) return;
 	addItemToExpressionFromInput();
-	const result = calculator.evaluate(expression);
-	if (result) {
-		calculatorUI.render(result);
-		expression = [result];
-	} else {
-		calculatorUI.render(expression);
-		expression = [];
+
+	const validExpression = expression.length >= 3;
+	if (validExpression) {
+		const lastItem = expression[expression.length - 1];
+		const lastItemIsOperator = lastItem === '*' 
+									|| lastItem === '/'
+									|| lastItem === '+'
+									|| lastItem === '-'
+		if (lastItemIsOperator) {
+			expression.pop();
+		}
+		const result = calculator.evaluate(expression);
+		if (result) {
+			calculatorUI.render(result);
+			expression = [result];
+		} else {
+			calculatorUI.render(expression);
+			expression = [];
+		}
 	}
 }
 
@@ -367,6 +385,7 @@ operators.forEach(operator => operator.addEventListener	('click', calculatorHand
 reset.addEventListener('click', calculatorHandlers.resetHandler);
 plusMinus.addEventListener('click', calculatorHandlers.plusMinusHandler);
 percent.addEventListener('click', calculatorHandlers.percentHandler);
+deleteButton.addEventListener('click', calculatorHandlers.deleteHandler);
 window.addEventListener('keydown', calculatorHandlers.keydownHandler);
 
 function checkIfDeleteButtonShouldDisplay() {
