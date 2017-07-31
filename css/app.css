@@ -43,7 +43,7 @@ h6 {
     padding: 30px;
     border-radius: 11px;
     background: #a05151;
-    box-shadow: 1px 3px 0 rgba(0, 0, 0, 0.3);
+    box-shadow: 5px 5px 3px rgba(0, 0, 0, 0.2);
     margin: 0 auto;
 }
 
@@ -52,7 +52,7 @@ h6 {
 	background: -webkit-linear-gradient(to right, #8c8c8c, #545454);  /* Chrome 10-25, Safari 5.1-6 */
 background: linear-gradient(to right, #8c8c8c, #545454); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
 	box-shadow: inset 3px 3px 0 rgba(0,0,0,0.5), inset -3px -3px 0 rgba(0,0,0, 0.5);
-	padding: 20px;
+	padding: 25px;
 	display: flex;
 	justify-content: flex-end;
 	align-items: center;
