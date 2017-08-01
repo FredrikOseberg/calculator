@@ -458,7 +458,6 @@ function buildStringExpression(arr) {
 }
 
 function buildExpressionFromArray(arr) {
-	let temp = [];
 	let result = [];
 
 	arr = arr.join("").split("");
@@ -472,19 +471,10 @@ function buildExpressionFromArray(arr) {
 
 		if (itemIsNotOperator) {
 			const number = Number(item);
-			temp.push(number);
+			result.push(number);
 		} else {
-			temp.push(item);
+			result.push(item);
 		}
-	});
-
-	temp.forEach(function checkValidExpression(item, index) {
-		const nextItem = temp[index + 1];
-		if (typeof item === 'number' && typeof nextItem === 'number') {
-			item = item + nextItem;
-			temp.splice(index + 1, 1);
-		}
-		result.push(item);
 	});
 
 	return result;
