@@ -122,6 +122,7 @@ const calculator = {
 		return one / two;
 	},
 	evaluate: function(arr) {
+		debugger;
 		let total = 0;
 		const noExpressionToEvaluate = arr.length < 3 || arr[arr.length - 1] === "0";
 		if (noExpressionToEvaluate) return;
@@ -195,39 +196,16 @@ const calculator = {
 			addItemToExpressionFromInput();
 			let fullExpressionAfterDelete = [], temporaryNum = [];
 			let expressionPieces;
+
+			expressionPieces = expression.join("").split("");
+
 			function removeLastItemFromTempArray() {
-					expressionPieces = expression.join("").split("");
 					const lastItemPosition = expressionPieces.length - 1;
 					expressionPieces.splice(lastItemPosition, 1);
 			}
 			removeLastItemFromTempArray();
 
-
-			function constructNumberStringAndPushToFullExpressionArr() {
-				const number = temporaryNum.join("");
-				if (number) {
-					fullExpressionAfterDelete.push(number);
-				}
-				temporaryNum = [];
-			}
-
-			expressionPieces.forEach(function reBuildExpression(item, index) {
-				const itemIsOperator = item === '/' || item === '*' || item === "+" || item === '-';
-				if (!itemIsOperator) {
-					temporaryNum.push(item);
-				} else {	
-					constructNumberStringAndPushToFullExpressionArr();
-					const operator = item;
-					fullExpressionAfterDelete.push(operator);
-				}
-				const lastExpressionItem = index === expressionPieces.length - 1;
-				if (lastExpressionItem) {
-					const temporaryNumHasContents = temporaryNum.length > 0;
-					if (temporaryNumHasContents) constructNumberStringAndPushToFullExpressionArr();
-				}
-			});
-
-			expression = fullExpressionAfterDelete;
+			expression = buildStringExpression(expressionPieces);
 			calculatorUI.render(expression);
 			
 			const expressionIsEmpty = expression.length === 0;
@@ -450,9 +428,43 @@ function removeOpacityFromDeleteButton() {
 	deleteButtonArrow.classList.remove('delete-button-opacity');
 }
 
+function buildStringExpression(arr) {
+	let fullExpressionAfterDelete = [], temporaryNum = [];
+
+	function constructNumberStringAndPushToFullExpressionArr() {
+		const number = temporaryNum.join("");
+		if (number) {
+			fullExpressionAfterDelete.push(number);
+		}
+		temporaryNum = [];
+	}
+
+	arr.forEach(function reBuildExpression(item, index) {
+		const itemIsOperator = item === '/' || item === '*' || item === "+" || item === '-';
+		if (!itemIsOperator) {
+			temporaryNum.push(item);
+		} else {	
+			constructNumberStringAndPushToFullExpressionArr();
+			const operator = item;
+			fullExpressionAfterDelete.push(operator);
+		}
+		const lastExpressionItem = index === arr.length - 1;
+		if (lastExpressionItem) {
+			const temporaryNumHasContents = temporaryNum.length > 0;
+			if (temporaryNumHasContents) constructNumberStringAndPushToFullExpressionArr();
+		}
+	});
+
+	return fullExpressionAfterDelete;
+}
+
 function buildExpressionFromArray(arr) {
 	let temp = [];
 	let result = [];
+
+	arr = arr.join("").split("");
+	arr = buildStringExpression(arr);
+
 	arr.forEach(function buildExpression(item) {
 		const itemIsNotOperator = item !== '+' 
 								  && item !== '-'
