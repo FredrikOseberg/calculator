@@ -122,7 +122,6 @@ const calculator = {
 		return one / two;
 	},
 	evaluate: function(arr) {
-		debugger;
 		let total = 0;
 		const noExpressionToEvaluate = arr.length < 3 || arr[arr.length - 1] === "0";
 		if (noExpressionToEvaluate) return;
