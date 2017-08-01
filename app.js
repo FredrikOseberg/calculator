@@ -440,12 +440,18 @@ function buildStringExpression(arr) {
 
 	arr.forEach(function reBuildExpression(item, index) {
 		const itemIsOperator = item === '/' || item === '*' || item === "+" || item === '-';
+
 		if (!itemIsOperator) {
 			temporaryNum.push(item);
-		} else {	
-			constructNumberStringAndPushToFullExpressionArr();
-			const operator = item;
-			fullExpressionAfterDelete.push(operator);
+		} else {
+			const firstItem = index === 0;
+			if (firstItem) {
+				temporaryNum.push(item);
+			} else {
+				constructNumberStringAndPushToFullExpressionArr();
+				const operator = item;
+				fullExpressionAfterDelete.push(operator);
+			}
 		}
 		const lastExpressionItem = index === arr.length - 1;
 		if (lastExpressionItem) {
